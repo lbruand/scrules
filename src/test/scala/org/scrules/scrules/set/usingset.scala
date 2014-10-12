@@ -34,7 +34,9 @@ case class RuleCase[Input, Output]
 }
 
 
-class RuleSet[Input, Output](val rules : Map[String, RuleCase[Input, Output]], val defaultResult : Output) extends Function[Input, Output] {
+class RuleSet[Input, Output](val rules : Map[String, RuleCase[Input, Output]], val defaultResult : Output) 
+						extends Function[Input, Output] {
+  
   val runtime = new TreeSet[RuleCase[Input, Output]]()(new Ordering[RuleCase[Input, Output]] {
     def compare(ac1: RuleCase[Input, Output], ac2: RuleCase[Input, Output]): Int = {
       ac2.salience compare ac1.salience
@@ -45,6 +47,8 @@ class RuleSet[Input, Output](val rules : Map[String, RuleCase[Input, Output]], v
     										case Some(ruleCase) => ruleCase.returnValue
     										case None => defaultResult
     									}
+  def merge(other : RuleSet[Input, Output]) : RuleSet[Input, Output] =  
+		  new RuleSet[Input, Output](this.rules ++ other.rules, this.defaultResult)  
 }
 
 // ===== Test context =========
