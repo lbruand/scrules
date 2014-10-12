@@ -33,13 +33,18 @@ case class RuleCase[Input, Output]
   def compare(that: RuleCase[Input, Output]): Int = this.salience compare that.salience
 }
 
+
 class RuleSet[Input, Output](val rules : Map[String, RuleCase[Input, Output]], val defaultResult : Output) extends Function[Input, Output] {
-  val runtime = rules.values.toSet
+  val runtime = new TreeSet[RuleCase[Input, Output]]()(new Ordering[RuleCase[Input, Output]] {
+    def compare(ac1: RuleCase[Input, Output], ac2: RuleCase[Input, Output]): Int = {
+      ac2.salience compare ac1.salience
+    }
+  }) ++ rules.values
+  
   def apply(input : Input) : Output = runtime.find(_.isDefinedAt(input)) match { 
     										case Some(ruleCase) => ruleCase.returnValue
     										case None => defaultResult
     									}
-//new TreeSet(rules.values)
 }
 
 // ===== Test context =========
@@ -52,13 +57,15 @@ case class MyOutput(val result : String)
 class OtherTest {
 	val myRuleSet = new RuleSet[MyInput, MyOutput](rules = 
 	  Map(
-	    "rule1" -> new RuleCase("", new EqExpr(_.id.identifier, "my"), new MyOutput("world"))
+	    "rule1" -> new RuleCase("rule1", new EqExpr(_.id.identifier, "my"), new MyOutput("world"), salience=1),
+	    "rule2" -> new RuleCase("rule2", new EqExpr(_.b, true), new MyOutput("bingo"))
 	  ), MyOutput("hello"))
 	  
     @Test
     def testOK() = {
 		assertEquals(new MyOutput("world"), myRuleSet.apply(new MyInput(Identifier("my", "BIC"), true)))
-		assertEquals(new MyOutput("hello"), myRuleSet.apply(new MyInput(Identifier("mya", "BIC"), true)))
+		assertEquals(new MyOutput("bingo"), myRuleSet.apply(new MyInput(Identifier("mya", "BIC"), true)))
+		assertEquals(new MyOutput("hello"), myRuleSet.apply(new MyInput(Identifier("mya", "BIC"), false)))
     }
 
 }
