@@ -6,6 +6,11 @@ import Assert._
 import scala.reflect.runtime.universe._
 import scala.reflect.runtime.{universe=>ru}
 
+
+// TODO union, compose on a RuleSet.^M
+// What is a RuleSet : It is a piece-wise definition of a Function from one Typ
+// We can further restrict the input and output type to enumerations and compos
+
 class Rule(val name: String)
   extends annotation.StaticAnnotation
   
