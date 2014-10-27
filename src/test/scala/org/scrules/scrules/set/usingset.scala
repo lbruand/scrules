@@ -25,7 +25,7 @@ case class AndExpr[Input](val exprs: List[MatchExpr[Input]]) extends MatchExpr[I
   def apply(input : Input) : Boolean = !exprs.exists(!_.apply(input))
 }
 
-class EqExpr[Input, Value](val projection : (Input => Value), val expectedValue : Value) extends MatchExpr[Input] {
+case class EqExpr[Input, Value](val projection : (Input => Value), val expectedValue : Value) extends MatchExpr[Input] {
   def apply(input : Input) : Boolean = expectedValue.equals(projection.apply(input))
 }
 
