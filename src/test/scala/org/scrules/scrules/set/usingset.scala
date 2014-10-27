@@ -36,7 +36,9 @@ case class RuleCase[Input, Output]
 			 val salience : Int = 0)
 			 extends ConstantPartialFunction[Input, Output](returnValue) with Ordered[RuleCase[Input, Output]] {
   def isDefinedAt(x : Input) = matchExpr.apply(x)
+  
   def compare(that: RuleCase[Input, Output]): Int = this.salience compare that.salience // TODO Maybe use the label to totalise the order.
+  
   override def andThen[OtherOutput](other : Function1[Output, OtherOutput]) : RuleCase[Input, OtherOutput] = 
     new RuleCase[Input, OtherOutput](this.label, this.matchExpr, other.apply(this.returnValue), this.salience)
 }
