@@ -5,8 +5,9 @@ import scala.collection.immutable.TreeSet
 
 /*
  * TODO :
- *    * Ability to define iterators over definition set.
+ *    * Ability to obtain iterators over definition set.
  *    * Pb : there is no log/explanation about the rule that was matched.
+ *    	Maybe the rulecase could also return its label as a side explaination. (also interesting for testing)
  */
 
 abstract class ConstantPartialFunction[Input, Output](val returnValue : Output) extends PartialFunction[Input, Output] {
