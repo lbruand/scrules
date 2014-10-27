@@ -3,7 +3,11 @@ import org.junit._
 import org.junit.Assert._
 import scala.collection.immutable.TreeSet
 
-
+/*
+ * TODO :
+ *    * Ability to define iterators over definition set.
+ *    * Pb : there is no log/explanation about the rule that was matched.
+ */
 
 abstract class ConstantPartialFunction[Input, Output](val returnValue : Output) extends PartialFunction[Input, Output] {
   def apply(v1 : Input) : Output = returnValue 
@@ -31,6 +35,8 @@ case class RuleCase[Input, Output]
 			 extends ConstantPartialFunction[Input, Output](returnValue) with Ordered[RuleCase[Input, Output]] {
   def isDefinedAt(x : Input) = matchExpr.apply(x)
   def compare(that: RuleCase[Input, Output]): Int = this.salience compare that.salience
+  def compose[OtherOutput](other : RuleSet[Output, OtherOutput]) : RuleCase[Input, OtherOutput] = 
+    new RuleCase[Input, OtherOutput](this.label, this.matchExpr, other.apply(this.returnValue), this.salience)
 }
 
 
@@ -48,7 +54,13 @@ class RuleSet[Input, Output](val rules : Map[String, RuleCase[Input, Output]], v
     										case None => defaultResult
     									}
   def merge(other : RuleSet[Input, Output]) : RuleSet[Input, Output] =  
-		  new RuleSet[Input, Output](this.rules ++ other.rules, this.defaultResult)  
+		  new RuleSet[Input, Output](this.rules ++ other.rules, this.defaultResult)
+		  
+  def compose[OtherOutput](other : RuleSet[Output, OtherOutput]) : RuleSet[Input, OtherOutput] = {
+    new RuleSet[Input, OtherOutput](
+        this.rules map (x => (x._1, x._2.compose(other))),
+        other.apply(this.defaultResult))
+  }
 }
 
 // ===== Test context =========
