@@ -15,19 +15,25 @@ abstract class ConstantPartialFunction[Input, Output](val returnValue : Output) 
   def apply(v1 : Input) : Output = returnValue 
 }
 
-abstract class MatchExpr[Input] extends (Input => Boolean)
+sealed abstract class MatchExpr[Input] extends (Input => Boolean) {
+  override def compose[A](g : A => Input) : MatchExpr[A] = null
+}
 
 case class OrExpr[Input](val exprs: List[MatchExpr[Input]]) extends MatchExpr[Input] {
   def apply(input : Input) : Boolean = exprs.exists(_.apply(input))
+  override def compose[A](g : A => Input) : MatchExpr[A] = new OrExpr(exprs map (_.compose(g).asInstanceOf[MatchExpr[A]])) 
 }
 
 case class AndExpr[Input](val exprs: List[MatchExpr[Input]]) extends MatchExpr[Input] {
   def apply(input : Input) : Boolean = !exprs.exists(!_.apply(input))
+  override def compose[A](g : A => Input) : MatchExpr[A] = new AndExpr(exprs map (_.compose(g).asInstanceOf[MatchExpr[A]]))
 }
 
 // TODO Maybe use the Lenses here.
 case class EqExpr[Input, Value](val projection : (Input => Value), val expectedValue : Value) extends MatchExpr[Input] {
   def apply(input : Input) : Boolean = expectedValue.equals(projection.apply(input))
+  
+  override def compose[A](g : A => Input) : MatchExpr[A] = new EqExpr(projection.compose(g), expectedValue)
 }
 
 case class RuleCase[Input, Output]
@@ -66,6 +72,22 @@ class RuleSet[Input, Output](val rules : Map[String, RuleCase[Input, Output]], v
         this.rules map (x => (x._1, x._2.andThen(other))),
         other.apply(this.defaultResult))
   }
+  def product[SecondInput, SecondOutput]( second : RuleSet[SecondInput, SecondOutput]) : 
+		  														  RuleSet[(Input, SecondInput), (Output, SecondOutput)] = 
+		  														    new RuleSet[(Input, SecondInput), (Output, SecondOutput)](
+		  														    			for { firstRuleCase <- this.rules; secondRuleCase <- second.rules } yield ("<"+firstRuleCase._2.label + ":" + secondRuleCase._2.label +">",
+		  														    			    new RuleCase[(Input, SecondInput), (Output, SecondOutput)](
+		  														    			    label = "<"+firstRuleCase._2.label + ":" + secondRuleCase._2.label +">",
+		  														    			    matchExpr = new AndExpr[(Input, SecondInput)](List(firstRuleCase._2.matchExpr.compose(_._1), secondRuleCase._2.matchExpr.compose(_._2))),
+		  														    			    returnValue = (firstRuleCase._2.returnValue, secondRuleCase._2.returnValue),
+		  														    			    salience = 0 /* TODO */)),
+		  														    			    
+		  														    			(this.defaultResult, second.defaultResult))
+}
+
+class MyRuleSet {
+
+  
 }
 
 // ===== Test context =========
