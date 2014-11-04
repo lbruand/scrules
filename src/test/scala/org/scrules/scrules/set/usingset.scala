@@ -122,5 +122,13 @@ class OtherTest {
 	  val crossProduct = myRuleSet.crossProduct(otherRuleSet)
 	  assertEquals((new MyOutput("world"), new MyOutput("otherworld")), crossProduct.apply( (new MyInput(Identifier("my", "BIC"), true), new MyInput(Identifier("my", "BIC"), true))))
 	}
+	
+	@Test
+	def testAndthen() = {
+	  val myRuleSetMod = myRuleSet.andThen(_.result)
+	  assertEquals("world", myRuleSetMod.apply(new MyInput(Identifier("my", "BIC"), true)))
+	  assertEquals("bingo", myRuleSetMod.apply(new MyInput(Identifier("mya", "BIC"), true)))
+	  assertEquals("hello", myRuleSetMod.apply(new MyInput(Identifier("mya", "BIC"), false)))
+	}
 
 }
