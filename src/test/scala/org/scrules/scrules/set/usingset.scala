@@ -60,7 +60,9 @@ class RuleSet[Input, Output](val rules : Map[String, RuleCase[Input, Output]], v
     }
   }) ++ rules.values
   
-  def apply(input : Input) : Output = runtime.find(_.isDefinedAt(input)) match { 
+  def findRule(input : Input) : Option[RuleCase[Input, Output]] = runtime.find(_.isDefinedAt(input))
+  
+  def apply(input : Input) : Output = findRule(input) match { 
     										case Some(ruleCase) => ruleCase.returnValue
     										case None => defaultResult
     									}
