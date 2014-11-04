@@ -53,10 +53,10 @@ case class RuleCase[Input, Output]
 }
 
 
-class RuleSet[Input, Output](val rules : Map[String, RuleCase[Input, Output]], val defaultResult : Output) 
+case class RuleSet[Input, Output](val rules : Map[String, RuleCase[Input, Output]], val defaultResult : Output) 
 						extends Function[Input, Output] {
   
-  val runtime = new TreeSet[RuleCase[Input, Output]]()(new Ordering[RuleCase[Input, Output]] {
+  lazy val runtime = new TreeSet[RuleCase[Input, Output]]()(new Ordering[RuleCase[Input, Output]] {
     def compare(ac1: RuleCase[Input, Output], ac2: RuleCase[Input, Output]): Int = {
       ac2.salience compare ac1.salience
     }
@@ -71,6 +71,10 @@ class RuleSet[Input, Output](val rules : Map[String, RuleCase[Input, Output]], v
   
   def merge(other : RuleSet[Input, Output]) : RuleSet[Input, Output] =
 		  new RuleSet[Input, Output](this.rules ++ other.rules, this.defaultResult)
+		  
+  def modifySalience(modifySalience : Int => Int) : RuleSet[Input, Output] = 
+    	new RuleSet[Input, Output](this.rules map (x => (x._1, x._2.copy(salience = modifySalience(x._2.salience)))), 
+    								defaultResult)
 
   override def andThen[OtherOutput](other : Output => OtherOutput) : RuleSet[Input, OtherOutput] = {
     new RuleSet[Input, OtherOutput](
