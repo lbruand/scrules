@@ -36,7 +36,7 @@ case class EqExpr[Input, Value](val projection : (Input => Value), val expectedV
 }
 
 case class RuleCase[Input, Output]
-			(var label : String, 
+			(var label : String,
 			 val matchExpr : MatchExpr[Input],
 			 override val returnValue : Output,
 			 val salience : Int = 0)
@@ -84,7 +84,7 @@ class RuleSet[Input, Output](val rules : Map[String, RuleCase[Input, Output]], v
         this.defaultResult
     )
 
-  def crossProduct[SecondInput, SecondOutput]( second : RuleSet[SecondInput, SecondOutput]) : 
+  def crossProduct[SecondInput, SecondOutput]( second : RuleSet[SecondInput, SecondOutput]) :
 		  														  RuleSet[(Input, SecondInput), (Output, SecondOutput)] = 
 		  														    new RuleSet[(Input, SecondInput), (Output, SecondOutput)](
 		  														    			for { firstRuleCase <- this.rules; secondRuleCase <- second.rules } yield ("<"+firstRuleCase._2.label + ":" + secondRuleCase._2.label +">",
