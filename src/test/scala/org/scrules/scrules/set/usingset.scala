@@ -72,7 +72,7 @@ class RuleSet[Input, Output](val rules : Map[String, RuleCase[Input, Output]], v
         this.rules map (x => (x._1, x._2.andThen(other))),
         other.apply(this.defaultResult))
   }
-  def product[SecondInput, SecondOutput]( second : RuleSet[SecondInput, SecondOutput]) : 
+  def crossProduct[SecondInput, SecondOutput]( second : RuleSet[SecondInput, SecondOutput]) : 
 		  														  RuleSet[(Input, SecondInput), (Output, SecondOutput)] = 
 		  														    new RuleSet[(Input, SecondInput), (Output, SecondOutput)](
 		  														    			for { firstRuleCase <- this.rules; secondRuleCase <- second.rules } yield ("<"+firstRuleCase._2.label + ":" + secondRuleCase._2.label +">",
@@ -80,15 +80,11 @@ class RuleSet[Input, Output](val rules : Map[String, RuleCase[Input, Output]], v
 		  														    			    label = "<"+firstRuleCase._2.label + ":" + secondRuleCase._2.label +">",
 		  														    			    matchExpr = new AndExpr[(Input, SecondInput)](List(firstRuleCase._2.matchExpr.compose(_._1), secondRuleCase._2.matchExpr.compose(_._2))),
 		  														    			    returnValue = (firstRuleCase._2.returnValue, secondRuleCase._2.returnValue),
-		  														    			    salience = 0 /* TODO */)),
+		  														    			    salience = firstRuleCase._2.salience * secondRuleCase._2.salience /* TODO */)),
 		  														    			    
 		  														    			(this.defaultResult, second.defaultResult))
 }
 
-class MyRuleSet {
-
-  
-}
 
 // ===== Test context =========
 
@@ -104,11 +100,23 @@ class OtherTest {
 	    "rule2" -> new RuleCase("rule2", new EqExpr(_.b, true), new MyOutput("bingo"))
 	  ), MyOutput("hello"))
 	  
+	val otherRuleSet = new RuleSet[MyInput, MyOutput](rules = 
+	  Map(
+	    "otherrule1" -> new RuleCase("otherrule1", new EqExpr(_.id.identifier, "my"), new MyOutput("otherworld"), salience=1),
+	    "otherrule2" -> new RuleCase("otherrule2", new EqExpr(_.b, true), new MyOutput("bingo"))
+	  ), MyOutput("hello"))
+	  
     @Test
     def testOK() = {
 		assertEquals(new MyOutput("world"), myRuleSet.apply(new MyInput(Identifier("my", "BIC"), true)))
 		assertEquals(new MyOutput("bingo"), myRuleSet.apply(new MyInput(Identifier("mya", "BIC"), true)))
 		assertEquals(new MyOutput("hello"), myRuleSet.apply(new MyInput(Identifier("mya", "BIC"), false)))
     }
+	
+	@Test
+	def testCrossProduct() = {
+	  val crossProduct = myRuleSet.crossProduct(otherRuleSet)
+	  assertEquals((new MyOutput("world"), new MyOutput("otherworld")), crossProduct.apply( (new MyInput(Identifier("my", "BIC"), true), new MyInput(Identifier("my", "BIC"), true))))
+	}
 
 }
