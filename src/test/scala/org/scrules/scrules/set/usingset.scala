@@ -8,7 +8,7 @@ import scala.collection.immutable.TreeSet
  *    * Ability to obtain iterators over definition set.
  *    * Pb : there is no log/explanation about the rule that was matched.
  *    	Maybe the rulecase could also return its label as a side explaination. (also interesting for testing)
- *    * Write a Product operator that builds the cartesian product of two rulesets.
+ *    * Write a union and a difference operator.
  */
 
 abstract class ConstantPartialFunction[Input, Output](val returnValue : Output) extends PartialFunction[Input, Output] {
