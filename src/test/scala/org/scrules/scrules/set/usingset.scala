@@ -48,6 +48,8 @@ case class RuleCase[Input, Output]
   
   override def andThen[OtherOutput](other : Function1[Output, OtherOutput]) : RuleCase[Input, OtherOutput] = 
     new RuleCase[Input, OtherOutput](this.label, this.matchExpr, other.apply(this.returnValue), this.salience)
+    
+  
 }
 
 
@@ -109,7 +111,7 @@ class OtherTest {
 	  ), MyOutput("hello"))
 	  
     @Test
-    def testOK() = {
+    def testApply() = {
 		assertEquals(new MyOutput("world"), myRuleSet.apply(new MyInput(Identifier("my", "BIC"), true)))
 		assertEquals(new MyOutput("bingo"), myRuleSet.apply(new MyInput(Identifier("mya", "BIC"), true)))
 		assertEquals(new MyOutput("hello"), myRuleSet.apply(new MyInput(Identifier("mya", "BIC"), false)))
