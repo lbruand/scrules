@@ -7,7 +7,6 @@ import scala.collection.immutable.TreeSet
  * TODO :
  *    * Ability to obtain iterators over definition set.
  *    * Pb : there is no log/explanation about the rule that was matched.
- *    	Maybe the rulecase could also return its label as a side explaination. (also interesting for testing)
  *    * Write a union and a difference operator.
  */
 
