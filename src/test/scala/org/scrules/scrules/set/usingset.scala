@@ -48,8 +48,9 @@ case class RuleCase[Input, Output]
   
   override def andThen[OtherOutput](other : Function1[Output, OtherOutput]) : RuleCase[Input, OtherOutput] = 
     new RuleCase[Input, OtherOutput](this.label, this.matchExpr, other.apply(this.returnValue), this.salience)
-    
-  
+
+  override def compose[PreInput](g : PreInput => Input) : RuleCase[PreInput, Output] = new RuleCase[PreInput, Output](this.label,
+		  																this.matchExpr.compose(g), this.returnValue, this.salience)		  																
 }
 
 
@@ -68,14 +69,22 @@ class RuleSet[Input, Output](val rules : Map[String, RuleCase[Input, Output]], v
     										case Some(ruleCase) => ruleCase.returnValue
     										case None => defaultResult
     									}
-  def merge(other : RuleSet[Input, Output]) : RuleSet[Input, Output] =  
+  
+  def merge(other : RuleSet[Input, Output]) : RuleSet[Input, Output] =
 		  new RuleSet[Input, Output](this.rules ++ other.rules, this.defaultResult)
-		  
-  override def andThen[OtherOutput](other : Function1[Output, OtherOutput]) : RuleSet[Input, OtherOutput] = {
+
+  override def andThen[OtherOutput](other : Output => OtherOutput) : RuleSet[Input, OtherOutput] = {
     new RuleSet[Input, OtherOutput](
         this.rules map (x => (x._1, x._2.andThen(other))),
         other.apply(this.defaultResult))
   }
+  
+  override def compose[PreInput](g : PreInput => Input) : RuleSet[PreInput, Output] =
+    new RuleSet[PreInput, Output](
+        this.rules map (x => (x._1, x._2.compose(g))),
+        this.defaultResult
+    )
+
   def crossProduct[SecondInput, SecondOutput]( second : RuleSet[SecondInput, SecondOutput]) : 
 		  														  RuleSet[(Input, SecondInput), (Output, SecondOutput)] = 
 		  														    new RuleSet[(Input, SecondInput), (Output, SecondOutput)](
@@ -85,7 +94,7 @@ class RuleSet[Input, Output](val rules : Map[String, RuleCase[Input, Output]], v
 		  														    			    matchExpr = new AndExpr[(Input, SecondInput)](List(firstRuleCase._2.matchExpr.compose(_._1), secondRuleCase._2.matchExpr.compose(_._2))),
 		  														    			    returnValue = (firstRuleCase._2.returnValue, secondRuleCase._2.returnValue),
 		  														    			    salience = firstRuleCase._2.salience * secondRuleCase._2.salience /* TODO */)),
-		  														    			    
+
 		  														    			(this.defaultResult, second.defaultResult))
 }
 
