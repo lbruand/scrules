@@ -92,7 +92,7 @@ class RuleSet[Input, Output](val rules : Map[String, RuleCase[Input, Output]], v
 		  														    			    label = "<"+firstRuleCase._2.label + ":" + secondRuleCase._2.label +">",
 		  														    			    matchExpr = new AndExpr[(Input, SecondInput)](List(firstRuleCase._2.matchExpr.compose(_._1), secondRuleCase._2.matchExpr.compose(_._2))),
 		  														    			    returnValue = (firstRuleCase._2.returnValue, secondRuleCase._2.returnValue),
-		  														    			    salience = firstRuleCase._2.salience * secondRuleCase._2.salience /* TODO */)),
+		  														    			    salience = firstRuleCase._2.salience * secondRuleCase._2.salience /* TODO is it a good idea to multiply */)),
 
 		  														    			(this.defaultResult, second.defaultResult))
 }
