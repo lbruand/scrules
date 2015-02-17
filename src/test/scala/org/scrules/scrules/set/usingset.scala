@@ -36,6 +36,12 @@ class OtherTest {
 	    "otherrule1" -> new RuleCase("otherrule1", new EqExpr(_.id.identifier, "my"), new MyOutput("otherworld"), salience=1),
 	    "otherrule2" -> new RuleCase("otherrule2", new EqExpr(_.b, true), new MyOutput("bingo"))
 	  ), MyOutput("hello"))
+	val bicList = List("FRXX", "BNPP", "SOGE")
+	val comprehensionRuleSet = new RuleSet[MyInput, MyOutput](rules = 
+	  (for (k <- bicList)
+	    yield ("otherrule1"+k -> new RuleCase("otherrule1 "+k, new EqExpr((x :MyInput) => x.id.identifier, "my"+k), new MyOutput("o"+k), salience=1)))
+	  toMap
+	  , MyOutput("hello"))
 	  
     @Test
     def testApply() = {
@@ -56,6 +62,12 @@ class OtherTest {
 	  assertEquals("world", myRuleSetMod.apply(new MyInput(Identifier("my", "BIC"), true)))
 	  assertEquals("bingo", myRuleSetMod.apply(new MyInput(Identifier("mya", "BIC"), true)))
 	  assertEquals("hello", myRuleSetMod.apply(new MyInput(Identifier("mya", "BIC"), false)))
+	}
+	
+	@Test
+	def testComprehension() = {
+	  assertEquals(3, comprehensionRuleSet.rules.size)
+	  assertEquals(new MyOutput("oFRXX"), comprehensionRuleSet.apply(new MyInput(Identifier("myFRXX", "BIC"), true)))
 	}
 
 }

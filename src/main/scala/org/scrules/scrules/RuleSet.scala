@@ -10,7 +10,9 @@ case class RuleSet[Input, Output](val rules : Map[String, RuleCase[Input, Output
   
   lazy val runtime = new TreeSet[RuleCase[Input, Output]]()(new Ordering[RuleCase[Input, Output]] {
     def compare(ac1: RuleCase[Input, Output], ac2: RuleCase[Input, Output]): Int = {
-      ac2.salience compare ac1.salience
+      val e=(ac2.salience compare ac1.salience)
+      if (e==0) (ac2.label compare ac1.label) else e
+      
     }
   }) ++ rules.values
   
