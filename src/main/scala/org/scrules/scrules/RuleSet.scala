@@ -23,7 +23,12 @@ case class RuleSet[Input, Output](val rules : Map[String, RuleCase[Input, Output
     										  }
     										  ruleCase.returnValue
     										}
-    										case None => defaultResult
+    										case None => {
+    										  if (logger.isDebugEnabled()) {
+    										    logger.debug(s"no rule fired on input [${input}] - default output")
+    										  }
+    										  defaultResult
+    										}
     									}
   
   def merge(other : RuleSet[Input, Output]) : RuleSet[Input, Output] =
