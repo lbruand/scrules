@@ -5,39 +5,16 @@ import scala.collection.immutable.TreeSet
 import org.slf4j.LoggerFactory
 import org.scrules.scrules.RuleSet
 import org.scrules.scrules.RuleCase
+import org.scrules.scrules.EqExpr
 
 
 /*
  * TODO :
  *    * Ability to obtain iterators over definition set.
- *    * Pb : there is no log/explanation about the rule that was matched.
  *    * Write a union and a difference operator.
  */
 
-abstract class ConstantPartialFunction[Input, Output](val returnValue : Output) extends PartialFunction[Input, Output] {
-  def apply(v1 : Input) : Output = returnValue 
-}
 
-sealed abstract class MatchExpr[Input] extends (Input => Boolean) {
-  override def compose[A](g : A => Input) : MatchExpr[A] = null
-}
-
-case class OrExpr[Input](val exprs: List[MatchExpr[Input]]) extends MatchExpr[Input] {
-  def apply(input : Input) : Boolean = exprs.exists(_.apply(input))
-  override def compose[A](g : A => Input) : MatchExpr[A] = new OrExpr(exprs map (_.compose(g).asInstanceOf[MatchExpr[A]])) 
-}
-
-case class AndExpr[Input](val exprs: List[MatchExpr[Input]]) extends MatchExpr[Input] {
-  def apply(input : Input) : Boolean = !exprs.exists(!_.apply(input))
-  override def compose[A](g : A => Input) : MatchExpr[A] = new AndExpr(exprs map (_.compose(g).asInstanceOf[MatchExpr[A]]))
-}
-
-// TODO Maybe use the Lenses here.
-case class EqExpr[Input, Value](val projection : (Input => Value), val expectedValue : Value) extends MatchExpr[Input] {
-  def apply(input : Input) : Boolean = expectedValue.equals(projection.apply(input))
-  
-  override def compose[A](g : A => Input) : MatchExpr[A] = new EqExpr(projection.compose(g), expectedValue)
-}
 
 
 // ===== Test context =========

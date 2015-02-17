@@ -1,6 +1,5 @@
 package org.scrules.scrules
 
-import org.scrules.scrules.set.AndExpr
 import org.slf4j.LoggerFactory
 import scala.collection.immutable.TreeSet
 import org.scrules.scrules.RuleCase
