@@ -2,6 +2,7 @@ package org.scrules.scrules.set
 import org.junit._
 import org.junit.Assert._
 import scala.collection.immutable.TreeSet
+import org.slf4j.LoggerFactory
 
 /*
  * TODO :
@@ -55,6 +56,7 @@ case class RuleCase[Input, Output]
 
 case class RuleSet[Input, Output](val rules : Map[String, RuleCase[Input, Output]], val defaultResult : Output) 
 						extends Function[Input, Output] {
+  def logger = LoggerFactory.getLogger(classOf[RuleSet[Input, Output]])
   
   lazy val runtime = new TreeSet[RuleCase[Input, Output]]()(new Ordering[RuleCase[Input, Output]] {
     def compare(ac1: RuleCase[Input, Output], ac2: RuleCase[Input, Output]): Int = {
@@ -65,7 +67,12 @@ case class RuleSet[Input, Output](val rules : Map[String, RuleCase[Input, Output
   def findRule(input : Input) : Option[RuleCase[Input, Output]] = runtime.find(_.isDefinedAt(input))
   
   def apply(input : Input) : Output = findRule(input) match { 
-    										case Some(ruleCase) => ruleCase.returnValue
+    										case Some(ruleCase) => {
+    										  if (logger.isDebugEnabled()) {
+    										    logger.debug(s"rule [${ruleCase.label}] fired on input [${input}]")
+    										  }
+    										  ruleCase.returnValue
+    										}
     										case None => defaultResult
     									}
   
